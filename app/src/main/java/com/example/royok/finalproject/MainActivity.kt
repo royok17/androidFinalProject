@@ -23,7 +23,10 @@ class MainActivity : Activity() {
 
         startBtn.setOnClickListener()
         {
-            val dialog = show(this, "",
+            val i = Intent(this,Main2Activity::class.java)           //go to the next activity
+            startActivity(i)
+
+            /*val dialog = show(this, "",
                     "find location", true)
             async {
                 val result = URL("\t\n" + "http://www.hebcal.com/shabbat/?cfg=json&geo=pos&latitude=31.771959&longitude=35.217018&tzid=Asia/Jerusalem&m=50&b=35").readText()
@@ -42,26 +45,10 @@ class MainActivity : Activity() {
                             dialog.cancel()
                             textView.text = itemsJson.toString()
                         })
-            }
+            }*/
 
-            /*val i = Intent(this,Main2Activity::class.java)           //go to the next activity
-            startActivity(i)*/
+
         }
-
-        /*val stringArray = ArrayList<String>()
-        val jsonArray = JSONArray()
-        var i = 0
-        val count = jsonArray.length()
-        while (i < count) {
-            try {
-                val jsonObject = jsonArray.getJSONObject(i)
-                stringArray.add(jsonObject.toString())
-            } catch (e: JSONException) {
-                e.printStackTrace()
-            }
-
-            i++
-        }*/
     }
 
 }
