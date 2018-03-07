@@ -1,32 +1,70 @@
 package com.example.royok.finalproject
 
+import android.Manifest
 import android.content.Intent
 import kotlinx.android.synthetic.main.activity_main.*
 import android.app.Activity
 import android.app.ProgressDialog.show
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.Location
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.telephony.CellSignalStrength
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.GoogleApiClient
+import com.google.android.gms.location.LocationListener
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.experimental.async
+import java.io.IOException
 import java.net.URL;
-import org.json.JSONException
-import org.json.JSONObject
-import org.json.JSONArray
+import java.util.*
+import java.nio.file.Files.size
 
 
-class MainActivity : Activity() {
+
+
+class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener, LocationListener {
+
+
+    // permission vars
+    private val MY_PERMISSIONS_REQUEST_LOCATION :Int=1
+    private val GPS_COARSE_LOCATION_REQ : Int = 2
+
+    private val GPS_LOCATION = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION)
+    private val GPS_COARSE_LOCATION = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION)
+
+
+
+    //LOCATION VARS
+     var mLocationRequest: LocationRequest ?= null
+    var mGoogleApiClient : GoogleApiClient?=null
+    lateinit var mCellSignalStrength: CellSignalStrength
+
+    var latitude :Double =0.0
+    var longtitude:Double = 0.0
+    //.......................................................
+    // data values
+    var parasha:String=""
+    var candleTime:String =""
+    var havdala:String =""
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        requestPermission()
+        initLocation()
         startBtn.setOnClickListener()
         {
-            var candleTime:String =""
-            var parasha:String=""
-            var havdala:String =""
             val dialog = show(this, "",
                     "find location", true)
             async {
@@ -51,36 +89,128 @@ class MainActivity : Activity() {
                     }
                 }
 
-                //var candleTimes:JsonObject = itemsJson[0] as JsonObject
-
-               // var times = candleTimes.getValue("title")
                 textView.post(
                         {
                             dialog.cancel()
                             textView.text = parasha+"\n"+candleTime+"\n"+havdala
                         })
+                createLocationRequest()
             }
 
-            /*val i = Intent(this,Main2Activity::class.java)           //go to the next activity
-            startActivity(i)*/
+        }
+    }
+
+    // Permission functions
+    fun requestPermission()
+    {
+        // request location permission
+        if(!(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED) || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, GPS_LOCATION, MY_PERMISSIONS_REQUEST_LOCATION)
         }
 
+    }
+    //TODO:: add permission callback function to check if permission is granted
 
-        /*val stringArray = ArrayList<String>()
-        val jsonArray = JSONArray()
-        var i = 0
-        val count = jsonArray.length()
-        while (i < count) {
+
+
+    //....................................................
+    // Location functions
+    private fun initLocation()
+    {
+        mGoogleApiClient = GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build()
+        createLocationRequest()
+    }
+
+    // attach onLocationChanged listener with interval and smallest displacement
+    fun createLocationRequest()
+    {
+        mLocationRequest = LocationRequest()
+                .setInterval(10 * 100)
+                .setFastestInterval(30*100)
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+    }
+    // interface functions
+
+    override fun onConnected(p0: Bundle?) {
+
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED)
+            requestPermission()
+        else
+        {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest,  this)
+
+            var lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
+            if(lastLocation == null)
+                return
+            latitude = lastLocation.latitude
+            longtitude = lastLocation.longitude
+
+            var gcd : Geocoder = Geocoder(baseContext, Locale.getDefault())
             try {
-                val jsonObject = jsonArray.getJSONObject(i)
-                stringArray.add(jsonObject.toString())
-            } catch (e: JSONException) {
+                var addresses = gcd.getFromLocation(latitude, longtitude, 1)
+                if (addresses.size > 0) {
+                    System.out.println(addresses.get(0).getLocality())
+                    var cityName = addresses.get(0).getLocality()
+                }
+            } catch (e: IOException) {
                 e.printStackTrace()
             }
 
-            i++
-        }*/
+        }
+
+    }
+
+    override fun onConnectionSuspended(p0: Int) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onConnectionFailed(p0: ConnectionResult) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun onLocationChanged(location: Location) {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED)
+            requestPermission()
+        else {
+
+            latitude = location.latitude
+            longtitude = location.longitude
+
+            var gcd: Geocoder = Geocoder(baseContext, Locale.getDefault())
+            try {
+                var addresses = gcd.getFromLocation(latitude, longtitude, 1)
+                if (addresses.size > 0) {
+                    System.out.println(addresses.get(0).getLocality())
+                    var cityName = addresses.get(0).getLocality()
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
     }
 
 
+    //  End Of Location Functions
+    //.................................................................................
+
+    //Life Cycle Functions /////////////////////////////////////////////////////
+    //*************************************************************************
+    override fun onStart() {
+        super.onStart()
+        mGoogleApiClient?.connect()
+    }
+
+    override fun onStop()
+    {
+        if(mGoogleApiClient!=null)
+        {
+            //LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this)
+            mGoogleApiClient?.disconnect()
+        }
+        super.onStop()
+    }
 }
