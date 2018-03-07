@@ -54,7 +54,8 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
     var parasha:String=""
     var candleTime:String =""
     var havdala:String =""
-
+    var city = ""
+    var reqCity = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,9 +67,12 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         startBtn.setOnClickListener()
         {
             val dialog = show(this, "",
-                    "find location", true)
+                    "Loading Data...", true)
             async {
-                val result = URL("\t\n" + "http://www.hebcal.com/shabbat/?cfg=json&geo=pos&latitude=31.771959&longitude=35.217018&tzid=Asia/Jerusalem&m=50&b=35").readText()
+                var req = getRequest()
+                if(req == "")
+                    return@async
+                val result = URL("\t\n" + req).readText()
                 val stringBuilder = StringBuilder(result)
                 val parser = Parser()
                 val json: JsonObject = parser.parse(stringBuilder) as JsonObject
@@ -148,7 +152,8 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                 return
             latitude = lastLocation.latitude
             longtitude = lastLocation.longitude
-
+            val tz = TimeZone.getDefault()
+            var tzid = tz.id
             var gcd : Geocoder = Geocoder(baseContext, Locale.getDefault())
             try {
                 var addresses = gcd.getFromLocation(latitude, longtitude, 1)
@@ -185,7 +190,9 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                 var addresses = gcd.getFromLocation(latitude, longtitude, 1)
                 if (addresses.size > 0) {
                     System.out.println(addresses.get(0).getLocality())
-                    var cityName = addresses.get(0).getLocality()
+                    city = addresses.get(0).getLocality()
+                    var countryCode = addresses.get(0).countryCode
+                    reqCity = countryCode+"-"+city
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -212,5 +219,10 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
             mGoogleApiClient?.disconnect()
         }
         super.onStop()
+    }
+    fun getRequest() :String{
+        if(reqCity != "")
+            return "http://www.hebcal.com/shabbat/?cfg=json&geo=city&city="+reqCity+"&m=50&b=18"
+        else return ""
     }
 }
