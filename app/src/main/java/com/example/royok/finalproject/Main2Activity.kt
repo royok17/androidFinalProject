@@ -20,8 +20,6 @@ import kotlinx.android.synthetic.main.tab_1.view.*
 import kotlinx.android.synthetic.main.tab_3.*
 import android.view.View.OnFocusChangeListener
 
-
-
 class Main2Activity : Activity() {
 
     private var mSectionsPagerAdapter: SectionsPagerAdapter? = null
@@ -33,7 +31,8 @@ class Main2Activity : Activity() {
         // primary sections of the activity.
         mSectionsPagerAdapter = SectionsPagerAdapter(fragmentManager)
         // Set up the ViewPager with the sections adapter.
-        container.adapter = mSectionsPagerAdapter
+
+        container.adapter =  mSectionsPagerAdapter
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -88,3 +87,4 @@ class Main2Activity : Activity() {
 
 
 }
+
