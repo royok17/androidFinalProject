@@ -55,7 +55,9 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
     var candleTime:String =""
     var havdala:String =""
     var city = ""
+    var countryCod = ""
     var reqCity = ""
+    var tzID = ""
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +71,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
             val dialog = show(this, "",
                     "Loading Data...", true)
             async {
-                var req = getRequest()
+                var req = buildRequest()
                 if(req == "")
                     return@async
                 val result = URL("\t\n" + req).readText()
@@ -185,18 +187,26 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
             latitude = location.latitude
             longtitude = location.longitude
 
-            var gcd: Geocoder = Geocoder(baseContext, Locale.getDefault())
-            try {
-                var addresses = gcd.getFromLocation(latitude, longtitude, 1)
-                if (addresses.size > 0) {
-                    System.out.println(addresses.get(0).getLocality())
+            setGeoLocationValues()
+        }
+    }
+
+    private fun setGeoLocationValues()
+    {
+        var gcd: Geocoder = Geocoder(baseContext, Locale.getDefault())
+        try {
+            var addresses = gcd.getFromLocation(latitude, longtitude, 1)
+            if (addresses.size > 0) {
+                System.out.println(addresses.get(0).getLocality())
+                countryCod = addresses.get(0).countryCode
+                if(countryCod == "IL")
+                    city = convertCityName(addresses.get(0).getLocality())
+                else
                     city = addresses.get(0).getLocality()
-                    var countryCode = addresses.get(0).countryCode
-                    reqCity = countryCode+"-"+city
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
             }
+            //buildRequest()
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
     }
 
@@ -220,9 +230,38 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         }
         super.onStop()
     }
-    fun getRequest() :String{
-        if(reqCity != "")
+    fun buildRequest() :String {
+        if(countryCod == "IL" && city != "")
+        {
+            reqCity = countryCod+"|"+city
             return "http://www.hebcal.com/shabbat/?cfg=json&geo=city&city="+reqCity+"&m=50&b=18"
-        else return ""
+        }
+        else
+        {
+            if (latitude != 0.0 && longtitude != 0.0) {
+                tzID = getTimezID()
+                return "http://www.hebcal.com/shabbat/?cfg=json&geo=pos&latitude=" + latitude + "&longitude=" + longtitude + "&tzid=" + tzID + "m=50&b=35"
+            }
+        }
+        return ""
+    }
+
+    private fun getTimezID() : String
+    {
+        //TODO:: implement logic of get tzid
+        return ""
+    }
+
+    private fun convertCityName(city : String):String
+    {
+        when (city){
+            "Modi'in-Maccabim-Re'ut" -> return "Modiin"
+            "Bet Shemesh" -> return "Beit Shemesh"
+            "Kefar Sava" -> return "Kfar Saba"
+            "Petah Tikva" -> return "Petach Tikvah"
+            "Rishon LeTsiyon" -> return "Rishon LeZion"
+        }
+
+        return city
     }
 }
