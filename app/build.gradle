@@ -33,4 +33,5 @@ dependencies {
     compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.19.3'
     compile 'com.beust:klaxon:0.30'
     compile 'com.google.android.gms:play-services-location:11.6.0'
+
 }

@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.telephony.CellSignalStrength
+import android.util.Log
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
@@ -58,7 +59,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
     var countryCod = ""
     var reqCity = ""
     var tzID = ""
-
+    var errFlag = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,14 +67,20 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
 
         requestPermission()
         initLocation()
+
         startBtn.setOnClickListener()
         {
             val dialog = show(this, "",
                     "Loading Data...", true)
             async {
                 var req = buildRequest()
-                if(req == "")
-                    return@async
+                if(req == "") {
+                    initLocation()
+                    dialog.cancel()
+                }
+                try{
+
+
                 val result = URL("\t\n" + req).readText()
                 val stringBuilder = StringBuilder(result)
                 val parser = Parser()
@@ -84,6 +91,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                     if(items[i].containsValue("candles"))
                     {
                         candleTime = items[i].getValue("title") as String
+                        candleTime = parseStrings(candleTime)
                     }
                     else if (items[i].containsValue("parashat"))
                     {
@@ -100,10 +108,18 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                             dialog.cancel()
                             textView.text = parasha+"\n"+candleTime+"\n"+havdala
                         })
-                createLocationRequest()
+                }
+
+                catch (err:Exception){
+                    dialog.cancel()
+                    Log.v("req","parsing json failed, bad request")}
+
             }
 
         }
+
+        createLocationRequest()
+
     }
 
     // Permission functions
@@ -154,19 +170,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                 return
             latitude = lastLocation.latitude
             longtitude = lastLocation.longitude
-            val tz = TimeZone.getDefault()
-            var tzid = tz.id
-            var gcd : Geocoder = Geocoder(baseContext, Locale.getDefault())
-            try {
-                var addresses = gcd.getFromLocation(latitude, longtitude, 1)
-                if (addresses.size > 0) {
-                    System.out.println(addresses.get(0).getLocality())
-                    var cityName = addresses.get(0).getLocality()
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-
+            setGeoLocationValues()
         }
 
     }
@@ -187,15 +191,33 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
             latitude = location.latitude
             longtitude = location.longitude
 
-            setGeoLocationValues()
+            var gcd: Geocoder = Geocoder(baseContext, Locale.getDefault())
+            try {
+                var isGeoCoderExist = Geocoder.isPresent()
+                var addresses = gcd.getFromLocation(latitude, longtitude, 1)
+
+                if (addresses.size > 0) {
+                    System.out.println(addresses.get(0).getLocality())
+                    countryCod = addresses.get(0).countryCode
+                    if(countryCod == "IL")
+                        city = convertCityName(addresses.get(0).getLocality())
+                    else
+                        city = addresses.get(0).getLocality()
+                }
+                mGoogleApiClient?.disconnect()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
     }
 
     private fun setGeoLocationValues()
     {
-        var gcd: Geocoder = Geocoder(baseContext, Locale.getDefault())
+        var gcd: Geocoder = Geocoder(baseContext, Locale.ENGLISH)
         try {
+            var isGeoCoderExist = Geocoder.isPresent()
             var addresses = gcd.getFromLocation(latitude, longtitude, 1)
+
             if (addresses.size > 0) {
                 System.out.println(addresses.get(0).getLocality())
                 countryCod = addresses.get(0).countryCode
@@ -204,7 +226,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                 else
                     city = addresses.get(0).getLocality()
             }
-            //buildRequest()
+            mGoogleApiClient?.disconnect()
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -231,32 +253,45 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         super.onStop()
     }
     fun buildRequest() :String {
+        if(latitude == 0.0 || longtitude == 0.0)
+        {
+            Log.v("REQUEST","location data or country cod missing")
+            setGeoLocationValues()
+            return ""
+        }
         if(countryCod == "IL" && city != "")
         {
-            reqCity = countryCod+"|"+city
+            reqCity = countryCod+"-"+city
             return "http://www.hebcal.com/shabbat/?cfg=json&geo=city&city="+reqCity+"&m=50&b=18"
         }
         else
         {
             if (latitude != 0.0 && longtitude != 0.0) {
-                tzID = getTimezID()
-                return "http://www.hebcal.com/shabbat/?cfg=json&geo=pos&latitude=" + latitude + "&longitude=" + longtitude + "&tzid=" + tzID + "m=50&b=35"
+                getTimezID()
+                if (tzID != "")
+                    return "http://www.hebcal.com/shabbat/?cfg=json&geo=pos&latitude=" + latitude + "&longitude=" + longtitude + "&tzid=" + tzID + "m=50&b=35"
+                else
+                    return ""
             }
         }
         return ""
     }
 
-    private fun getTimezID() : String
+    private fun getTimezID()
     {
-        //TODO:: implement logic of get tzid
-        return ""
+        var tzReq = "http://api.geonames.org/timezoneJSON?lat="+latitude+"&lng="+longtitude+"&username=michaelga"
+        val result = URL("\t\n" + tzReq).readText()
+        val stringBuilder = StringBuilder(result)
+        val parser = Parser()
+        val json: JsonObject = parser.parse(stringBuilder) as JsonObject
+        tzID = json.get("timezoneId") as String
     }
 
     private fun convertCityName(city : String):String
     {
         when (city){
             "Modi'in-Maccabim-Re'ut" -> return "Modiin"
-            "Bet Shemesh" -> return "Beit Shemesh"
+            "Bet Shemesh" ->            return "Beit Shemesh"
             "Kefar Sava" -> return "Kfar Saba"
             "Petah Tikva" -> return "Petach Tikvah"
             "Rishon LeTsiyon" -> return "Rishon LeZion"
@@ -264,4 +299,19 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
 
         return city
     }
+
+    private fun parseStrings(src : String ) : String
+    {
+        var tmp : String = ""
+        var x =0;
+        var end = src.length -1
+        if(src.contains("Candle lighting"))
+        {
+            x = src.indexOf(":")+2;
+            return src.substring(x,end)
+        }
+
+        return ""
+    }
+
 }

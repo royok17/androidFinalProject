@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.tab_1.view.*
 /**
  * Created by royok on 06/03/2018.
  */
-class Tab3 : Fragment(){
+class Tab3 : android.support.v4.app.Fragment (){
 //    var mTimePicker : timePicker ?= null
     var saveTime : Button?= null
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,

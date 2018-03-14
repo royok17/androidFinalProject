@@ -10,7 +10,7 @@ import kotlinx.android.synthetic.main.tab_1.view.*
 /**
  * Created by royok on 06/03/2018.
  */
-class Tab2 : Fragment()
+class Tab2 : android.support.v4.app.Fragment ()
 {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {

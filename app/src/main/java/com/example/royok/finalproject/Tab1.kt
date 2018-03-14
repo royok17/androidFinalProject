@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.tab_1.view.*
 /**
  * Created by royok on 06/03/2018.
  */
-class Tab1 : Fragment() {
+class Tab1 : android.support.v4.app.Fragment () {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.tab_1, container, false)
