@@ -4,21 +4,143 @@
     android:id="@+id/constraintLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg3"
     tools:context="com.example.royok.finalproject.Main2Activity">
 
+
     <TextView
-        android:id="@+id/section_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:id="@+id/locationTxt"
+        android:layout_width="391dp"
+        android:layout_height="57dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/bg4"
+        android:padding="10dp"
+        android:text="גבעת יערים ירושלים"
+        android:textAlignment="center"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textSize="24sp"
+        android:textStyle="bold|italic"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/constraintLayout"
-        tools:layout_constraintLeft_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/parashaTxt"
+        android:layout_width="388dp"
+        android:layout_height="38dp"
+        android:layout_marginTop="136dp"
+        android:text="פרשת השבוע"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        app:layout_constraintHorizontal_bias="0.478"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/curParashaTxt"
+        android:layout_width="388dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="164dp"
+        android:text="ויקרא"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textSize="36sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintHorizontal_bias="0.478"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/lightCandleTxt"
+        android:layout_width="388dp"
+        android:layout_height="42dp"
+        android:layout_marginTop="280dp"
+        android:text="הדלקת נרות"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        app:layout_constraintHorizontal_bias="0.478"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/curLightCandleTxt"
+        android:layout_width="388dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="344dp"
+        android:text="17:12"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textSize="36sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintHorizontal_bias="0.478"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/dateLcTxt"
+        android:layout_width="381dp"
+        android:layout_height="24dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="320dp"
+        android:text="יום שישי כח אדר התשעה"
+        android:textAlignment="center"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/curLightCandleTxt2"
+        android:layout_width="388dp"
+        android:layout_height="61dp"
+        android:layout_marginTop="504dp"
+        android:text="18:23"
+        android:textAlignment="center"
+        android:textAllCaps="true"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textSize="36sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintHorizontal_bias="0.478"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/havdalahTxt"
+        android:layout_width="388dp"
+        android:layout_height="38dp"
+        android:layout_marginTop="436dp"
+        android:text="יציאת שבת"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        app:layout_constraintHorizontal_bias="0.478"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/dateHavTxt2"
+        android:layout_width="383dp"
+        android:layout_height="28dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="480dp"
+        android:text="יום שבת כט אדר התשעה"
+        android:textAlignment="center"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
