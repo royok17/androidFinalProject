@@ -31,7 +31,6 @@ class Main2Activity : Activity() {
         // primary sections of the activity.
         mSectionsPagerAdapter = SectionsPagerAdapter(fragmentManager)
         // Set up the ViewPager with the sections adapter.
-
         container.adapter =  mSectionsPagerAdapter
     }
 
