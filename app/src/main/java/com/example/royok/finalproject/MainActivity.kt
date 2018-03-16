@@ -6,6 +6,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import android.app.Activity
 import android.app.ProgressDialog.show
 import android.content.pm.PackageManager
+import android.icu.text.LocaleDisplayNames
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
@@ -78,51 +79,61 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                     initLocation()
                     dialog.cancel()
                 }
-                try{
-
-
-                val result = URL("\t\n" + req).readText()
-                val stringBuilder = StringBuilder(result)
-                val parser = Parser()
-                val json: JsonObject = parser.parse(stringBuilder) as JsonObject
-                val items : JsonArray<JsonObject> = json.get("items") as JsonArray <JsonObject>
-                for (i in 0..items.size-1)
+                try
                 {
-                    if(items[i].containsValue("candles"))
+                    val result = URL("\t\n" + req).readText()
+                    val stringBuilder = StringBuilder(result)
+                    val parser = Parser()
+                    val json: JsonObject = parser.parse(stringBuilder) as JsonObject
+                    val items : JsonArray<JsonObject> = json.get("items") as JsonArray <JsonObject>
+                    for (i in 0..items.size-1)
                     {
-                        candleTime = items[i].getValue("title") as String
-                        candleTime = parseStrings(candleTime)
-                    }
-                    else if (items[i].containsValue("parashat"))
-                    {
-                        parasha = items[i].getValue("hebrew") as String
-                    }
-                    else if (items[i].containsValue("havdalah"))
-                    {
-                        havdala = items[i].getValue("title") as String
-                    }
-                }
-
-                textView.post(
+                        if(items[i].containsValue("candles"))
                         {
-                            dialog.cancel()
-                            textView.text = parasha+"\n"+candleTime+"\n"+havdala
-                        })
-                }
+                            candleTime = items[i].getValue("title") as String
+                            candleTime = parseStrings(candleTime)
+                        }
+                        else if (items[i].containsValue("parashat"))
+                        {
+                            parasha = items[i].getValue("hebrew") as String
+                        }
+                        else if (items[i].containsValue("havdalah"))
+                        {
+                            havdala = items[i].getValue("title") as String
+                            havdala = parseStrings(havdala)
+                        }
+                    }
+
+                    textView.post(
+                            {
+                                dialog.cancel()
+                                textView.text = parasha+"\n"+candleTime+"\n"+havdala
+                                if(candleTime != "" && havdala != "" && parasha != "")
+                                    startTabMenu()
+                            })
+                    }
 
                 catch (err:Exception){
                     dialog.cancel()
                     Log.v("req","parsing json failed, bad request")}
-
             }
-
         }
-
         createLocationRequest()
-
     }
 
-    // Permission functions
+    // init the next activity with the requerred information
+    fun startTabMenu()
+    {
+        var mIntent = Intent(this,Main2Activity::class.java)
+        mIntent.putExtra("candleTime",candleTime)
+        mIntent.putExtra("parasha",parasha)
+        mIntent.putExtra("havdala",havdala)
+        mIntent.putExtra("city",getHebrewCity())
+        startActivity(mIntent)
+    }
+
+
+    // Permission ask functions
     fun requestPermission()
     {
         // request location permission
@@ -187,27 +198,9 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED)
             requestPermission()
         else {
-
             latitude = location.latitude
             longtitude = location.longitude
-
-            var gcd: Geocoder = Geocoder(baseContext, Locale.getDefault())
-            try {
-                var isGeoCoderExist = Geocoder.isPresent()
-                var addresses = gcd.getFromLocation(latitude, longtitude, 1)
-
-                if (addresses.size > 0) {
-                    System.out.println(addresses.get(0).getLocality())
-                    countryCod = addresses.get(0).countryCode
-                    if(countryCod == "IL")
-                        city = convertCityName(addresses.get(0).getLocality())
-                    else
-                        city = addresses.get(0).getLocality()
-                }
-                mGoogleApiClient?.disconnect()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
+            setGeoLocationValues()
         }
     }
 
@@ -252,13 +245,20 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         }
         super.onStop()
     }
+
+
+    // LOCAL HELPERS.........................
+    //......................................
+
     fun buildRequest() :String {
+
         if(latitude == 0.0 || longtitude == 0.0)
         {
             Log.v("REQUEST","location data or country cod missing")
             setGeoLocationValues()
             return ""
         }
+        setGeoLocationValues()
         if(countryCod == "IL" && city != "")
         {
             reqCity = countryCod+"-"+city
@@ -304,14 +304,35 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
     {
         var tmp : String = ""
         var x =0;
-        var end = src.length -1
+        var end = src.length -2
         if(src.contains("Candle lighting"))
         {
-            x = src.indexOf(":")+2;
+            x = src.indexOf(":")+2
             return src.substring(x,end)
         }
-
+        if (src.contains("Havdalah"))
+        {
+            x= src.indexOf(":")+2
+            return src.substring(x,end)
+        }
         return ""
     }
+
+
+    fun getHebrewCity() : String
+    {
+        when (city){
+            "Jerusalem" -> return "ירושלים"
+            "Tel Aviv" -> return  "תל אביב"
+            "Haifa" -> "חיפה"
+            "Modiin" -> return "מודיעין"
+            "Beit Shemesh" -> return "בית שמש"
+            "Kfar Saba" -> return "כפר סבא"
+            "Petach Tikvah" -> return "פתח תקווה"
+            "Rishon LeZion" -> return "ראשון לציון"
+        }
+        return city
+    }
+
 
 }
