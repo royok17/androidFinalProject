@@ -1,70 +1,36 @@
 package com.example.royok.finalproject
 
-import android.Manifest
 import android.content.Intent
 import kotlinx.android.synthetic.main.activity_main.*
 import android.app.Activity
 import android.app.ProgressDialog.show
-import android.content.pm.PackageManager
-import android.icu.text.LocaleDisplayNames
 import android.location.Geocoder
-import android.location.Location
 import android.os.Bundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
-import android.telephony.CellSignalStrength
 import android.util.Log
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.api.GoogleApiClient
-import com.google.android.gms.location.LocationListener
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationServices
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.experimental.async
 import java.io.IOException
-import java.io.Serializable
 import java.net.URL;
 import java.util.*
-import java.nio.file.Files.size
 
+class MainActivity : Activity(){
 
+    val locationHandler : locationHandler = locationHandler()
 
-
-class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener, LocationListener  {
-
-
-    // permission vars
-    private val MY_PERMISSIONS_REQUEST_LOCATION :Int=1
-    private val GPS_COARSE_LOCATION_REQ : Int = 2
-
-    private val GPS_LOCATION = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION)
-    private val GPS_COARSE_LOCATION = arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION)
-
-
-
-    //LOCATION VARS
-     var mLocationRequest: LocationRequest ?= null
-    var mGoogleApiClient : GoogleApiClient?=null
-    lateinit var mCellSignalStrength: CellSignalStrength
-
-    var latitude :Double =0.0
-    var longtitude:Double = 0.0
-    //.......................................................
     // data values
     var sData : ShabatData = ShabatData()
     var countryCod = ""
-//    var reqCity = ""
     var tzID = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        requestPermission()
-        initLocation()
+        locationHandler.initContext(this)
+        locationHandler.requestPermission()
+        locationHandler.initLocation(this)
 
         startBtn.setOnClickListener()
         {
@@ -73,7 +39,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
             async {
                 var req = buildRequest()
                 if(req == "") {
-                    initLocation()
+//                    locationHandler.initLocation(baseContext)
                     dialog.cancel()
                 }
                 try
@@ -100,7 +66,6 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                             sData.havdala = parseStrings(sData.havdala)
                         }
                     }
-
                     textView.post(
                             {
                                 dialog.cancel()
@@ -115,7 +80,6 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                     Log.v("req","parsing json failed, bad request")}
             }
         }
-        createLocationRequest()
     }
 
     // init the next activity with the requerred information
@@ -128,83 +92,12 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
     }
 
 
-    // Permission ask functions
-    fun requestPermission()
-    {
-        // request location permission
-        if(!(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED) || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, GPS_LOCATION, MY_PERMISSIONS_REQUEST_LOCATION)
-        }
-
-    }
-    //TODO:: add permission callback function to check if permission is granted
-
-
-
-    //....................................................
-    // Location functions
-    private fun initLocation()
-    {
-        mGoogleApiClient = GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build()
-        createLocationRequest()
-    }
-
-    // attach onLocationChanged listener with interval and smallest displacement
-    fun createLocationRequest()
-    {
-        mLocationRequest = LocationRequest()
-                .setInterval(10 * 100)
-                .setFastestInterval(30*100)
-                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
-    }
-    // interface functions
-
-    override fun onConnected(p0: Bundle?) {
-
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED)
-            requestPermission()
-        else
-        {
-            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest,  this)
-
-            var lastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
-            if(lastLocation == null)
-                return
-            latitude = lastLocation.latitude
-            longtitude = lastLocation.longitude
-            setGeoLocationValues()
-        }
-
-    }
-
-    override fun onConnectionSuspended(p0: Int) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onConnectionFailed(p0: ConnectionResult) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun onLocationChanged(location: Location) {
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)!=PackageManager.PERMISSION_GRANTED)
-            requestPermission()
-        else {
-            latitude = location.latitude
-            longtitude = location.longitude
-            setGeoLocationValues()
-        }
-    }
-
     private fun setGeoLocationValues()
     {
         var gcd: Geocoder = Geocoder(baseContext, Locale.ENGLISH)
         try {
             var isGeoCoderExist = Geocoder.isPresent()
-            var addresses = gcd.getFromLocation(latitude, longtitude, 1)
+            var addresses = gcd.getFromLocation(locationHandler.latitude, locationHandler.longtitude, 1)
 
             if (addresses.size > 0) {
                 System.out.println(addresses.get(0).getLocality())
@@ -214,29 +107,26 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                 else
                     sData.city = addresses.get(0).getLocality()
             }
-            mGoogleApiClient?.disconnect()
+            locationHandler.mGoogleApiClient?.disconnect()
         } catch (e: IOException) {
             e.printStackTrace()
         }
     }
 
 
-    //  End Of Location Functions
-    //.................................................................................
-
     //Life Cycle Functions /////////////////////////////////////////////////////
     //*************************************************************************
     override fun onStart() {
         super.onStart()
-        mGoogleApiClient?.connect()
+        locationHandler.mGoogleApiClient?.connect()
     }
 
     override fun onStop()
     {
-        if(mGoogleApiClient!=null)
+        if(locationHandler.mGoogleApiClient!=null)
         {
             //LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient,this)
-            mGoogleApiClient?.disconnect()
+            locationHandler.mGoogleApiClient?.disconnect()
         }
         super.onStop()
     }
@@ -245,12 +135,13 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
     // LOCAL HELPERS.........................
     //......................................
 
+    // builds the correct request according to the location taken
     fun buildRequest() :String {
-
-        if(latitude == 0.0 || longtitude == 0.0)
+        var lat = locationHandler.latitude
+        var long = locationHandler.longtitude
+        if(lat == 0.0 || long == 0.0)
         {
             Log.v("REQUEST","location data or country cod missing")
-            setGeoLocationValues()
             return ""
         }
         setGeoLocationValues()
@@ -261,10 +152,10 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         }
         else
         {
-            if (latitude != 0.0 && longtitude != 0.0) {
+            if (lat != 0.0 && long!= 0.0) {
                 getTimezID()
                 if (tzID != "")
-                    return "http://www.hebcal.com/shabbat/?cfg=json&geo=pos&latitude=" + latitude + "&longitude=" + longtitude + "&tzid=" + tzID + "m=50&b=35"
+                    return "http://www.hebcal.com/shabbat/?cfg=json&geo=pos&latitude=" + lat + "&longitude=" + long + "&tzid=" + tzID + "m=50&b=35"
                 else
                     return ""
             }
@@ -272,9 +163,10 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         return ""
     }
 
+    // for global location request
     private fun getTimezID()
     {
-        var tzReq = "http://api.geonames.org/timezoneJSON?lat="+latitude+"&lng="+longtitude+"&username=michaelga"
+        var tzReq = "http://api.geonames.org/timezoneJSON?lat="+locationHandler.latitude+"&lng="+locationHandler.longtitude+"&username=michaelga"
         val result = URL("\t\n" + tzReq).readText()
         val stringBuilder = StringBuilder(result)
         val parser = Parser()
@@ -282,11 +174,12 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         tzID = json.get("timezoneId") as String
     }
 
+    // adjustments for the API accepted strings
     private fun convertCityName(city : String):String
     {
         when (city){
             "Modi'in-Maccabim-Re'ut" -> return "Modiin"
-            "Bet Shemesh" ->            return "Beit Shemesh"
+            "Bet Shemesh" ->  return "Beit Shemesh"
             "Kefar Sava" -> return "Kfar Saba"
             "Petah Tikva" -> return "Petach Tikvah"
             "Rishon LeTsiyon" -> return "Rishon LeZion"
@@ -295,6 +188,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         return city
     }
 
+    // extract the time values from the answere recieved from the API
     private fun parseStrings(src : String ) : String
     {
         var tmp : String = ""
@@ -313,7 +207,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
         return ""
     }
 
-
+    // this function converts the city name to hebrew in case the city is from Israel
     fun getHebrewCity() : String
     {
         when (sData.city){
