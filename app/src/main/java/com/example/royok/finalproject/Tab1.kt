@@ -21,15 +21,16 @@ class Tab1() : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.tab_1, container, false)
         var mActivity = activity as Main2Activity
-        var parashaTxt : TextView = rootView.findViewById(R.id.parashaTxt)
-        parashaTxt.text = mActivity.parasha
-        var curLightCandleTxt : TextView = rootView.findViewById(R.id.curLightCandleTxt)
-        curLightCandleTxt.text = mActivity.candletime
-        var havdalahTxt : TextView = rootView.findViewById(R.id.havdalahTxt)
-        havdalahTxt.text = mActivity.havdala
-        var city : TextView = rootView.findViewById(R.id.locationTxt)
-        city.text = mActivity.city
+        var sData = mActivity.sData as ShabatData
 
+        var parashaTxt : TextView = rootView.findViewById(R.id.parashaTxt)
+        parashaTxt.text = sData.parasha
+        var curLightCandleTxt : TextView = rootView.findViewById(R.id.curLightCandleTxt)
+        curLightCandleTxt.text = sData.candletime
+        var havdalahTxt : TextView = rootView.findViewById(R.id.havdalahTxt)
+        havdalahTxt.text = sData.havdala
+        var city : TextView = rootView.findViewById(R.id.locationTxt)
+        city.text = sData.city
         return rootView
     }
 

@@ -25,6 +25,7 @@ import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.experimental.async
 import java.io.IOException
+import java.io.Serializable
 import java.net.URL;
 import java.util.*
 import java.nio.file.Files.size
@@ -32,7 +33,7 @@ import java.nio.file.Files.size
 
 
 
-class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener, LocationListener {
+class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener, LocationListener  {
 
 
     // permission vars
@@ -53,14 +54,10 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
     var longtitude:Double = 0.0
     //.......................................................
     // data values
-    var parasha:String=""
-    var candleTime:String =""
-    var havdala:String =""
-    var city = ""
+    var sData : ShabatData = ShabatData()
     var countryCod = ""
-    var reqCity = ""
+//    var reqCity = ""
     var tzID = ""
-    var errFlag = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -90,25 +87,25 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                     {
                         if(items[i].containsValue("candles"))
                         {
-                            candleTime = items[i].getValue("title") as String
-                            candleTime = parseStrings(candleTime)
+                            sData.candletime = items[i].getValue("title") as String
+                            sData.candletime = parseStrings(sData.candletime)
                         }
                         else if (items[i].containsValue("parashat"))
                         {
-                            parasha = items[i].getValue("hebrew") as String
+                            sData.parasha = items[i].getValue("hebrew") as String
                         }
                         else if (items[i].containsValue("havdalah"))
                         {
-                            havdala = items[i].getValue("title") as String
-                            havdala = parseStrings(havdala)
+                            sData.havdala = items[i].getValue("title") as String
+                            sData.havdala = parseStrings(sData.havdala)
                         }
                     }
 
                     textView.post(
                             {
                                 dialog.cancel()
-                                textView.text = parasha+"\n"+candleTime+"\n"+havdala
-                                if(candleTime != "" && havdala != "" && parasha != "")
+//                                textView.text = parasha+"\n"+candleTime+"\n"+havdala
+                                if(sData.candletime != "" && sData.havdala != "" && sData.parasha != "")
                                     startTabMenu()
                             })
                     }
@@ -125,10 +122,8 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
     fun startTabMenu()
     {
         var mIntent = Intent(this,Main2Activity::class.java)
-        mIntent.putExtra("candleTime",candleTime)
-        mIntent.putExtra("parasha",parasha)
-        mIntent.putExtra("havdala",havdala)
-        mIntent.putExtra("city",getHebrewCity())
+        sData.city = getHebrewCity()
+        mIntent.putExtra("sData",sData)
         startActivity(mIntent)
     }
 
@@ -215,9 +210,9 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
                 System.out.println(addresses.get(0).getLocality())
                 countryCod = addresses.get(0).countryCode
                 if(countryCod == "IL")
-                    city = convertCityName(addresses.get(0).getLocality())
+                    sData.city = convertCityName(addresses.get(0).getLocality())
                 else
-                    city = addresses.get(0).getLocality()
+                    sData.city = addresses.get(0).getLocality()
             }
             mGoogleApiClient?.disconnect()
         } catch (e: IOException) {
@@ -259,9 +254,9 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
             return ""
         }
         setGeoLocationValues()
-        if(countryCod == "IL" && city != "")
+        if(countryCod == "IL" && sData.city != "")
         {
-            reqCity = countryCod+"-"+city
+            var reqCity = countryCod+"-"+sData.city
             return "http://www.hebcal.com/shabbat/?cfg=json&geo=city&city="+reqCity+"&m=50&b=18"
         }
         else
@@ -321,7 +316,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
 
     fun getHebrewCity() : String
     {
-        when (city){
+        when (sData.city){
             "Jerusalem" -> return "ירושלים"
             "Tel Aviv" -> return  "תל אביב"
             "Haifa" -> "חיפה"
@@ -331,7 +326,7 @@ class MainActivity : Activity(),GoogleApiClient.ConnectionCallbacks,GoogleApiCli
             "Petach Tikvah" -> return "פתח תקווה"
             "Rishon LeZion" -> return "ראשון לציון"
         }
-        return city
+        return sData.city
     }
 
 
