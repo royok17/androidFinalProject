@@ -13,4 +13,49 @@
         <item>Saturday</item>
     </string-array>
 
-</resources>
+    <string-array name="citiesDB">
+        <item>Ashdod</item>
+        <item>Ashkelon</item>
+        <item>Bat Yam</item>
+        <item>Be'er Sheva</item>
+        <item>Beit Shemesh</item>
+        <item>Bnei Brak</item>
+        <item>Eilat</item>
+        <item>Hadera</item>
+        <item>Haifa</item>
+        <item>Herzliya</item>
+        <item>Holon</item>
+        <item>Jerusalem</item>
+        <item>Kfar Saba</item>
+        <item>Lod</item>
+        <item>Modiin</item>
+        <item>Nazareth</item>
+        <item>Netanya</item>
+        <item>Petach Tikvah</item>
+        <item>Ra'anana</item>
+        <item>Ramat Gan</item>
+        <item>Ramla</item>
+        <item>Rishon LeZion</item>
+        <item>Tel Aviv</item>
+        <item>Tiberias</item>
+    </string-array>
+
+    <string-array name="districtNames">
+        <item>North District</item>      <!--district-->
+        <item>Haifa</item>               <!--city-->
+        <item>South District</item>      <!--district-->
+        <item>Be'er Sheva</item>         <!--city-->
+        <item>Center District</item>     <!--district-->
+        <item>Tel Aviv</item>            <!--city-->
+        <item>Jerusalem District</item> <!--district-->
+        <item>Jerusalem</item>           <!--city-->
+        <item>Tel Aviv Districts</item>  <!--district-->
+        <item>Tel Aviv</item>            <!--city-->
+    </string-array>
+
+    <string name="defaultLocation">Jerusalem</string>
+
+
+
+
+    </resources>

@@ -1,12 +1,19 @@
 package com.example.royok.finalproject
 
+import android.Manifest
 import android.content.Intent
 import kotlinx.android.synthetic.main.activity_main.*
 import android.app.Activity
 import android.app.ProgressDialog.show
+import android.content.pm.PackageManager
+import android.content.res.Resources
+import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.util.Log
+import android.widget.Toast
 import com.beust.klaxon.JsonArray
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.Parser
@@ -19,27 +26,34 @@ class MainActivity : Activity(){
 
     val locationHandler : locationHandler = locationHandler()
 
+    enum class reqType {NONE,FromCity,FromDistrict}
     // data values
     var sData : ShabatData = ShabatData()
+    var mReqType : reqType = reqType.NONE
+    var reqCity :String =""
     var countryCod = ""
-    var tzID = ""
-
+    var permission = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         locationHandler.initContext(this)
-        locationHandler.requestPermission()
+        requestPermission()
         locationHandler.initLocation(this)
 
         startBtn.setOnClickListener()
         {
+            requestPermission()
+            if (! permission)
+                Toast.makeText(this,"location permission invalid!\ndefault location will be loaded",Toast.LENGTH_SHORT).show()
             val dialog = show(this, "",
                     "Loading Data...", true)
             async {
                 var req = buildRequest()
+
+                Log.v("requestCity: " ,reqCity)
+
                 if(req == "") {
-//                    locationHandler.initLocation(baseContext)
                     dialog.cancel()
                 }
                 try
@@ -97,15 +111,15 @@ class MainActivity : Activity(){
         var gcd: Geocoder = Geocoder(baseContext, Locale.ENGLISH)
         try {
             var isGeoCoderExist = Geocoder.isPresent()
-            var addresses = gcd.getFromLocation(locationHandler.latitude, locationHandler.longtitude, 1)
+            var addresses = gcd.getFromLocation(locationHandler.latitude, locationHandler.longtitude, 10)
+
 
             if (addresses.size > 0) {
-                System.out.println(addresses.get(0).getLocality())
                 countryCod = addresses.get(0).countryCode
                 if(countryCod == "IL")
-                    sData.city = convertCityName(addresses.get(0).getLocality())
+                    getValuesFromAddress(addresses)
                 else
-                    sData.city = addresses.get(0).getLocality()
+                    mReqType = reqType.NONE
             }
             locationHandler.mGoogleApiClient?.disconnect()
         } catch (e: IOException) {
@@ -134,45 +148,91 @@ class MainActivity : Activity(){
 
     // LOCAL HELPERS.........................
     //......................................
-
     // builds the correct request according to the location taken
     fun buildRequest() :String {
         var lat = locationHandler.latitude
         var long = locationHandler.longtitude
-        if(lat == 0.0 || long == 0.0)
+        setGeoLocationValues()
+
+        Log.v("reqTYPE",mReqType.toString())
+        if(mReqType == reqType.NONE )
         {
             Log.v("REQUEST","location data or country cod missing")
-            return ""
+            sData.city = getString(R.string.defaultLocation)
+            reqCity  = "IL-"+sData.city
+            mReqType = reqType.FromCity
+//            return "http://www.hebcal.com/shabbat/?cfg=json&geo=city&city="+reqCity+"&m=50&b=18"
         }
-        setGeoLocationValues()
-        if(countryCod == "IL" && sData.city != "")
+
+        if(mReqType == reqType.FromCity || mReqType == reqType.FromDistrict)
         {
-            var reqCity = countryCod+"-"+sData.city
             return "http://www.hebcal.com/shabbat/?cfg=json&geo=city&city="+reqCity+"&m=50&b=18"
         }
         else
-        {
-            if (lat != 0.0 && long!= 0.0) {
-                getTimezID()
-                if (tzID != "")
-                    return "http://www.hebcal.com/shabbat/?cfg=json&geo=pos&latitude=" + lat + "&longitude=" + long + "&tzid=" + tzID + "m=50&b=35"
-                else
-                    return ""
-            }
-        }
-        return ""
+            return ""
     }
 
-    // for global location request
-    private fun getTimezID()
+    private fun getValuesFromAddress( addresses : List <Address>)
     {
-        var tzReq = "http://api.geonames.org/timezoneJSON?lat="+locationHandler.latitude+"&lng="+locationHandler.longtitude+"&username=michaelga"
-        val result = URL("\t\n" + tzReq).readText()
-        val stringBuilder = StringBuilder(result)
-        val parser = Parser()
-        val json: JsonObject = parser.parse(stringBuilder) as JsonObject
-        tzID = json.get("timezoneId") as String
+        var tmpCity :String
+        var tmpRegion : String
+
+        var j: Int =0
+        sData.city = convertCityName(addresses.get(0).locality)// check if city name is equal to API DB
+        markCityExist()
+
+        if (reqCity != "")
+            return
+        else     // get city from geographical district
+        {
+            var distritcts = application.resources.getStringArray(R.array.districtNames)
+            var districtName : String = ""
+            for (i in 0..addresses.size-1)  // set city
+            {
+                if (addresses.get(i)?.adminArea != null) {
+                    districtName = addresses.get(i)?.adminArea
+                    break;
+                }
+            }
+            for (j in 0..distritcts.size - 1)
+            {
+                if (distritcts.get(j).equals(districtName))
+                {
+                    mReqType = reqType.FromDistrict
+                    reqCity = countryCod + "-" + distritcts.get(j + 1)       // distritcts get(i+1) returns the city according to the district
+                    break
+                }
+            }
+
+        }
     }
+
+//        if(mReqType == reqType.NONE)
+//        {
+//            sData.city = Resources.getSystem().getString(R.string.defaultLocation)
+//            reqCity  = countryCod+"-"+sData.city
+//            mReqType = reqType.FromCity
+//        }
+//    }
+
+    // set boolean flag to mark that city is exist
+    private fun markCityExist()
+    {
+        var cities = application.resources.getStringArray(R.array.citiesDB)
+        for (i in 0..cities.size-1)
+        {
+            if(cities.get(i) == sData.city)
+            {
+                mReqType = reqType.FromCity
+                reqCity = countryCod+"-"+sData.city
+                return
+            }
+        }
+    }
+
+
+
+
 
     // adjustments for the API accepted strings
     private fun convertCityName(city : String):String
@@ -219,9 +279,59 @@ class MainActivity : Activity(){
             "Kfar Saba" -> return "כפר סבא"
             "Petach Tikvah" -> return "פתח תקווה"
             "Rishon LeZion" -> return "ראשון לציון"
+            "Ashdod" -> return "אשדוד"
+            "Ashkelon"-> return "אשקלון"
+            "Bat Yam"-> return "בת ים"
+            "Be'er Sheva"-> return "באר שבע"
+            "Bnei Brak"-> return "בני ברק"
+            "Eilat"-> return "אילת"
+            "Hadera"-> return "חדרה"
+            "Herzliya"-> return "הרצליה"
+            "Holon"-> return "חולון"
+            "Kfar Saba"-> return "כפר סבא"
+            "Lod"-> return "לוד"
+            "Nazareth"-> return "נצרת"
+            "Netanya"-> return "נתניה"
+            "Ra'anana"-> return "רעננה"
+            "Ramat Gan"-> return "רמת גן"
+            "Ramla"-> return "רמלה"
+            "Tiberias"-> return "טבריה"
         }
         return sData.city
     }
 
+
+    // Permission ask functions
+    fun requestPermission()
+    {
+        // request location permission
+        if(!(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)== PackageManager.PERMISSION_GRANTED) || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, locationHandler.GPS_LOCATION, locationHandler.MY_PERMISSIONS_REQUEST_LOCATION)
+        }
+        else
+            permission = true
+
+    }
+
+    // handle permission answere
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                            permissions: Array<String>, grantResults: IntArray) {
+
+        when (requestCode)
+        {
+            locationHandler.MY_PERMISSIONS_REQUEST_LOCATION -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    locationHandler.initLocation(this)
+                    setGeoLocationValues()
+                    permission = true
+                } else
+                {
+
+                }
+                return
+            }
+        }
+    }
 
 }
