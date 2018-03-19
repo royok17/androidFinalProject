@@ -334,10 +334,8 @@ class MainActivity : Activity(){
                     locationHandler.initLocation(this)
                     setGeoLocationValues()
                     permission = true
-                } else
-                {
-
                 }
+
                 return
             }
         }

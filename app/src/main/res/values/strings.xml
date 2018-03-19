@@ -12,6 +12,8 @@
         <item>Friday</item>
         <item>Saturday</item>
     </string-array>
+    <string name="appwidget_text">כניסת שבת</string>
+    <string name="add_widget">Add widget</string>
 
     <string-array name="citiesDB">
         <item>Ashdod</item>

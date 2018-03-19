@@ -7,13 +7,34 @@
     tools:context="com.example.royok.finalproject.Main2Activity">
 
     <TextView
-        android:id="@+id/section_label"
-        android:layout_width="73dp"
-        android:layout_height="77dp"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:id="@+id/textView2"
+        android:layout_width="323dp"
+        android:layout_height="44dp"
+        android:layout_marginBottom="448dp"
+        android:layout_marginTop="8dp"
+        android:text="פרשת השבוע"
+        android:textAlignment="center"
+        android:textAllCaps="false"
+        android:textColor="@color/common_google_signin_btn_text_dark_focused"
+        android:textSize="30sp"
+        android:textStyle="bold|italic"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.513"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/constraintLayout"
-        tools:layout_constraintLeft_creator="1"
-        tools:layout_constraintTop_creator="1" />
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <WebView
+        android:id="@+id/webViewer"
+        android:layout_width="344dp"
+        android:layout_height="424dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
 </android.support.constraint.ConstraintLayout>
