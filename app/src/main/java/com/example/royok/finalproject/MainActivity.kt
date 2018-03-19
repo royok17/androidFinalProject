@@ -6,7 +6,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import android.app.Activity
 import android.app.ProgressDialog.show
 import android.content.pm.PackageManager
-import android.content.res.Resources
+import android.icu.text.SimpleDateFormat
 import android.location.Address
 import android.location.Geocoder
 import android.os.Bundle
@@ -62,6 +62,9 @@ class MainActivity : Activity(){
                     val stringBuilder = StringBuilder(result)
                     val parser = Parser()
                     val json: JsonObject = parser.parse(stringBuilder) as JsonObject
+                    val dateStr : String = json.get("date") as String
+                    var dateReq = buildHebrewDateReq(dateStr)
+
                     val items : JsonArray<JsonObject> = json.get("items") as JsonArray <JsonObject>
                     for (i in 0..items.size-1)
                     {
@@ -83,7 +86,6 @@ class MainActivity : Activity(){
                     textView.post(
                             {
                                 dialog.cancel()
-//                                textView.text = parasha+"\n"+candleTime+"\n"+havdala
                                 if(sData.candletime != "" && sData.havdala != "" && sData.parasha != "")
                                     startTabMenu()
                             })
@@ -298,6 +300,13 @@ class MainActivity : Activity(){
             "Tiberias"-> return "טבריה"
         }
         return sData.city
+    }
+
+    private fun buildHebrewDateReq(dateStr:String) : String
+    {
+
+
+        return ""
     }
 
 
