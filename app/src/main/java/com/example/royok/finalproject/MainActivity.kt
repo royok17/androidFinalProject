@@ -58,12 +58,11 @@ class MainActivity : Activity(){
                 }
                 try
                 {
-                    val result = URL("\t\n" + req).readText()
-                    val stringBuilder = StringBuilder(result)
+                    var result = URL("\t\n" + req).readText()
+                    var stringBuilder = StringBuilder(result)
                     val parser = Parser()
                     val json: JsonObject = parser.parse(stringBuilder) as JsonObject
                     val dateStr : String = json.get("date") as String
-                    var dateReq = buildHebrewDateReq(dateStr)
 
                     val items : JsonArray<JsonObject> = json.get("items") as JsonArray <JsonObject>
                     for (i in 0..items.size-1)
@@ -83,14 +82,19 @@ class MainActivity : Activity(){
                             sData.havdala = parseStrings(sData.havdala)
                         }
                     }
-                    textView.post(
-                            {
-                                dialog.cancel()
-                                if(sData.candletime != "" && sData.havdala != "" && sData.parasha != "")
-                                    startTabMenu()
-                            })
-                    }
+                    var dateReq = buildHebrewDateReq(dateStr)
+                    var res2 = URL("\t\n" + dateReq).readText()
+                    stringBuilder = StringBuilder(res2)
+                    val jsonDate: JsonObject = parser.parse(stringBuilder) as JsonObject
+                    sData.hebDate_friday = jsonDate.get("hebrew") as String
 
+                    textView.post(
+                        {
+                            dialog.cancel()
+                            if(sData.candletime != "" && sData.havdala != "" && sData.parasha != "")
+                                startTabMenu()
+                        })
+                    }
                 catch (err:Exception){
                     dialog.cancel()
                     Log.v("req","parsing json failed, bad request")}
@@ -304,9 +308,17 @@ class MainActivity : Activity(){
 
     private fun buildHebrewDateReq(dateStr:String) : String
     {
-
-
-        return ""
+        var x = dateStr.indexOf("-")
+        var y = dateStr.indexOf("-",x+1)
+        var year = dateStr.substring(0,x)
+        var month = dateStr.substring(x+1,y)
+        x = dateStr.indexOf("T",y+1,true)
+        var day = dateStr.substring(y+1,x)
+        y = dateStr.indexOf(":",x+1,true)
+        var hour =  dateStr.substring(x+1,y)
+        x = dateStr.indexOf(":",y+1)
+        var min = dateStr.substring(y+1,x)
+        return "http://www.hebcal.com/converter/?cfg=json&gy="+year+"&gm="+month+"&gd="+day+"&g2h=1"
     }
 
 

@@ -11,15 +11,18 @@ class ShabatData : Serializable {
     lateinit var havdala :String
     lateinit var candletime :String
     lateinit var city :String
-    lateinit var hebrewDate : String
+    lateinit var hebDate_friday : String
+    lateinit var hebDate_saturday : String
 
-    fun initData(par:String,hav:String,can:String,cit:String,date:String)
+
+    fun initData(par:String,hav:String,can:String,cit:String,fday:String,stday:String)
     {
         parasha = par
         havdala = hav
         candletime = can
         city = cit
-        hebrewDate = date
+        hebDate_friday = fday
+        hebDate_saturday = stday
     }
 
 
