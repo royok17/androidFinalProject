@@ -1,12 +1,11 @@
 package com.example.royok.finalproject
 
-import android.app.Notification
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
+import java.io.Serializable
 
 class MyReciver : BroadcastReceiver() {
 
@@ -26,8 +25,8 @@ class MyReciver : BroadcastReceiver() {
         val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 
         val notification = Notification.Builder(context)
-                .setContentTitle("lighting candle:")
-                .setContentText("text")
+                .setContentTitle("שבת היום!!!!!")
+                .setContentText("כנס עכשיו! ובדוק את זמני השבת השבוע!").setSound(alarmSound)
                 .setSmallIcon(R.drawable.notification_icon_background)
                 .setAutoCancel(true).setWhen(timeAlert)
                 .setContentIntent(pendingIntent)

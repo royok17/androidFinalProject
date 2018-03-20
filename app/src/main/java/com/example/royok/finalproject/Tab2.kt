@@ -23,13 +23,15 @@ class Tab2 : android.support.v4.app.Fragment ()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.tab_2, container, false)
+        var mActivity = activity as Main2Activity
+        var sData = mActivity.sData as ShabatData
 
         web = rootView.findViewById(R.id.webViewer)
         web!!.setWebViewClient(WebViewClient())
         web!!.settings.builtInZoomControls
 
         var str = "http://he.wikipedia.org/wiki/פרשת_"
-        var curPar = "במדבר"
+        var curPar = sData.parasha.subSequence(5,sData.parasha.length)
         web!!.loadUrl(str + curPar)
 
         return rootView

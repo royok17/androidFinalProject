@@ -26,6 +26,10 @@ import android.R.string.cancel
 import android.content.Context.ALARM_SERVICE
 import android.app.AlarmManager
 import android.app.PendingIntent
+import android.widget.Toast
+import android.R.attr.data
+
+
 
 
 
@@ -38,23 +42,34 @@ class Tab3 : android.support.v4.app.Fragment (){
     var switch1 : Switch?= null
     var tp: TimePicker ?= null
     var noteTxt: TextView?= null
-    var widgetTxt = null
+    val FRIDAY:Int = 3
+    var sData:ShabatData ?= null
 
     @SuppressLint("WrongViewCast")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.tab_3, container, false)
+        var mActivity = activity as Main2Activity
+        sData = mActivity.sData as ShabatData
+
         saveTime = rootView.findViewById(R.id.setTime)
         switch1 = rootView.findViewById(R.id.switch1)
         tp = rootView.findViewById(R.id.timePicker)
-        noteTxt = rootView.findViewById(R.id.selectTimeTxt2)
+        noteTxt = rootView.findViewById(R.id.noteTxt)
+
+        var str ="* Note: ligthing candles will be at "
+        str += sData!!.candletime
+        noteTxt!!.text = str
 
         switch1!!.setOnClickListener(View.OnClickListener {
             if(switch1!!.isChecked) {
                 saveTime!!.isEnabled = true
+                saveTime!!.text = "save time"
+
             }
-            else {
+            else
+            {
                 saveTime!!.isEnabled = false
                 val intent = Intent()
                 val sender = PendingIntent.getBroadcast(this.activity, 0, intent, 0)
@@ -72,16 +87,17 @@ class Tab3 : android.support.v4.app.Fragment (){
             var text = "" + hour + ":" + min
             var calendar: Calendar = Calendar.getInstance()
 
-            //calendar.set(Calendar.DAY_OF_WEEK,1)
-            //calendar.set(Calendar.DAY_OF_WEEK,Calendar.FRIDAY)
-            calendar.set(Calendar.HOUR_OF_DAY,17)
-            calendar.set(Calendar.MINUTE,26)
+            calendar.set(Calendar.DAY_OF_WEEK,FRIDAY)
+            calendar.set(Calendar.HOUR_OF_DAY,hour)
+            calendar.set(Calendar.MINUTE,min)
             calendar.set(Calendar.SECOND, 0);
 
-            val intent = Intent()
-            val pendingIntent = PendingIntent.getActivity(this.activity,0,intent,PendingIntent.FLAG_UPDATE_CURRENT)
+            val intent = Intent(this.activity, MyReciver::class.java)
             var alarmManager = this.activity.getSystemService(ALARM_SERVICE) as AlarmManager
+            val pendingIntent = PendingIntent.getBroadcast(this.activity,0,intent,PendingIntent.FLAG_UPDATE_CURRENT)
             alarmManager.setRepeating(AlarmManager.RTC_WAKEUP,calendar.timeInMillis, AlarmManager.INTERVAL_DAY,pendingIntent)
+
+
 
             /*val notification = Notification.Builder(this.activity)
                     .setContentTitle("lighting candle:")
@@ -91,11 +107,14 @@ class Tab3 : android.support.v4.app.Fragment (){
 
             val nm:NotificationManager = this.activity.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             nm.notify(0,notification.build())*/
-            saveTime!!.setBackgroundColor(Color.YELLOW)
+            Toast.makeText(this.activity, "time saved - " + hour + ":" + min, Toast.LENGTH_LONG).show()
+            saveTime!!.text = "time Saved"
+            saveTime!!.isEnabled = false
         }
 
         return rootView
     }
+
 }
 
 

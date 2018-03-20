@@ -13,7 +13,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
-        android:text="Shabbat Notification"
+        android:text="@string/shabbat_notification"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -26,7 +26,7 @@
         android:layout_width="300dp"
         android:layout_height="17dp"
         android:layout_marginTop="44dp"
-        android:text="Notification will alert in Friday."
+        android:text="@string/notification_will_alert_in_friday"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
@@ -35,13 +35,12 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/selectTimeTxt2"
+        android:id="@+id/noteTxt"
         android:layout_width="316dp"
         android:layout_height="24dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="* Note: ligthing candles will be at 17:07 PM"
         android:textAlignment="center"
         android:textColor="@android:color/holo_red_dark"
         app:layout_constraintEnd_toEndOf="parent"
@@ -70,7 +69,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:enabled="false"
-        android:text="Save Time"
+        android:text="@string/save_time"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

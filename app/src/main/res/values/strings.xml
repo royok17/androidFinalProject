@@ -56,8 +56,14 @@
     </string-array>
 
     <string name="defaultLocation">Jerusalem</string>
+    <string name="par">פרשת השבוע</string>
+    <string name="candle">הדלקת נרות</string>
+    <string name="hav">יציאת שבת</string>
+    <string name="shabbat_notification">Shabbat Notification</string>
+    <string name="notification_will_alert_in_friday">Notification will alert in Friday.</string>
+    <string name="save_time">Save Time</string>
+    <string name="para">פרשת השבוע</string>
+    <string name="emptyVal">--:--</string>
 
 
-
-
-    </resources>
+</resources>

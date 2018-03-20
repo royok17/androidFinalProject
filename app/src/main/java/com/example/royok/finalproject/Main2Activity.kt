@@ -11,7 +11,7 @@ class Main2Activity : FragmentActivity(){
     private lateinit var pagerAdapter: mPagerAdapter
     // TODO:: change information to data object
 
-    lateinit var sData :Serializable
+    var sData :Serializable ?= null
     private lateinit var viewPager: ViewPager
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -16,21 +16,27 @@ import kotlinx.android.synthetic.main.tab_1.view.*
  */
 class Tab1() : Fragment() {
 
+    var curParashaTxt : TextView ?= null
+    var curLightCandleTxt : TextView ?= null
+    var curHavdalah : TextView ?= null
+    var city : TextView ?= null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+            override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.tab_1, container, false)
         var mActivity = activity as Main2Activity
         var sData = mActivity.sData as ShabatData
 
-        var parashaTxt : TextView = rootView.findViewById(R.id.parashaTxt)
-        parashaTxt.text = sData.parasha
-        var curLightCandleTxt : TextView = rootView.findViewById(R.id.curLightCandleTxt)
-        curLightCandleTxt.text = sData.candletime
-        var havdalahTxt : TextView = rootView.findViewById(R.id.havdalahTxt)
-        havdalahTxt.text = sData.havdala
-        var city : TextView = rootView.findViewById(R.id.locationTxt)
-        city.text = sData.city
+        curParashaTxt = rootView.findViewById(R.id.curParashaTxt)
+        curLightCandleTxt = rootView.findViewById(R.id.curLightCandleTxt)
+        curHavdalah =  rootView.findViewById(R.id.curHavdalah)
+        city = rootView.findViewById(R.id.locationTxt)
+
+        curParashaTxt!!.text = sData.parasha.subSequence(5,sData.parasha.length)
+        curLightCandleTxt!!.text = sData.candletime
+        curHavdalah!!.text = sData.havdala
+        city!!.text = sData.city
+
         return rootView
     }
 

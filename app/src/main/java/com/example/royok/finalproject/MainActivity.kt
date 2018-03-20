@@ -70,7 +70,7 @@ class MainActivity : Activity(){
                         if(items[i].containsValue("candles"))
                         {
                             sData.candletime = items[i].getValue("title") as String
-                            sData.candletime = parseStrings(sData.candletime)
+                            sData.candletime = convertToPM(parseStrings(sData.candletime))
                         }
                         else if (items[i].containsValue("parashat"))
                         {
@@ -79,7 +79,7 @@ class MainActivity : Activity(){
                         else if (items[i].containsValue("havdalah"))
                         {
                             sData.havdala = items[i].getValue("title") as String
-                            sData.havdala = parseStrings(sData.havdala)
+                            sData.havdala = convertToPM(parseStrings(sData.havdala))
                         }
                     }
                     var dateReq = buildHebrewDateReq(dateStr)
@@ -305,6 +305,15 @@ class MainActivity : Activity(){
         }
         return sData.city
     }
+
+    private fun convertToPM(str:String):String
+    {
+        var hour:String = str[0].toString()
+        var newHour = hour.toInt()+12
+        var min:String = str.subSequence(2,str.length).toString()
+        return newHour.toString() +":"+ min
+    }
+
 
     private fun buildHebrewDateReq(dateStr:String) : String
     {

@@ -1,5 +1,6 @@
 package com.example.royok.finalproject
 
+import android.support.annotation.IntegerRes
 import android.util.Log
 import java.io.Serializable
 
