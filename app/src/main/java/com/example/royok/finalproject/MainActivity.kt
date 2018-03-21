@@ -33,6 +33,9 @@ class MainActivity : Activity(){
     var reqCity :String =""
     var countryCod = ""
     var permission = false
+    lateinit var calendarDate : Calendar
+    lateinit var shabatDateReq : String
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -85,8 +88,13 @@ class MainActivity : Activity(){
                     var dateReq = buildHebrewDateReq(dateStr)
                     var res2 = URL("\t\n" + dateReq).readText()
                     stringBuilder = StringBuilder(res2)
-                    val jsonDate: JsonObject = parser.parse(stringBuilder) as JsonObject
-                    sData.hebDate_friday = jsonDate.get("hebrew") as String
+                    var jsonDate: JsonObject = parser.parse(stringBuilder) as JsonObject
+                    sData.hebDate_friday = "יום שישי "+jsonDate.get("hebrew") as String
+
+                    var res3 = URL ("\t\n" + shabatDateReq).readText()
+                    stringBuilder = StringBuilder(res3)
+                    jsonDate = parser.parse(stringBuilder) as JsonObject
+                    sData.hebDate_saturday = "יום שבת " +jsonDate.get("hebrew") as String
 
                     textView.post(
                         {
@@ -213,13 +221,6 @@ class MainActivity : Activity(){
         }
     }
 
-//        if(mReqType == reqType.NONE)
-//        {
-//            sData.city = Resources.getSystem().getString(R.string.defaultLocation)
-//            reqCity  = countryCod+"-"+sData.city
-//            mReqType = reqType.FromCity
-//        }
-//    }
 
     // set boolean flag to mark that city is exist
     private fun markCityExist()
@@ -320,13 +321,25 @@ class MainActivity : Activity(){
         var x = dateStr.indexOf("-")
         var y = dateStr.indexOf("-",x+1)
         var year = dateStr.substring(0,x)
+        var  yearInt : Int = Integer.parseInt(year)
         var month = dateStr.substring(x+1,y)
+        var  monthInt : Int= Integer.parseInt(month)
         x = dateStr.indexOf("T",y+1,true)
         var day = dateStr.substring(y+1,x)
+        var  dayInt: Int= Integer.parseInt(day)
+
         y = dateStr.indexOf(":",x+1,true)
         var hour =  dateStr.substring(x+1,y)
+        var  hourInt : Int= Integer.parseInt(hour)
+
         x = dateStr.indexOf(":",y+1)
         var min = dateStr.substring(y+1,x)
+        var minInt: Int = Integer.parseInt(min)
+
+        calendarDate = Calendar.getInstance()
+        calendarDate.set(yearInt,monthInt-1,dayInt)
+        calendarDate.add(Calendar.DATE,+1)
+        shabatDateReq = "http://www.hebcal.com/converter/?cfg=json&gy="+calendarDate.get(Calendar.YEAR).toString()+"&gm="+month.toString()+"&gd="+calendarDate.get(Calendar.DATE).toString()+"&g2h=1"
         return "http://www.hebcal.com/converter/?cfg=json&gy="+year+"&gm="+month+"&gd="+day+"&g2h=1"
     }
 

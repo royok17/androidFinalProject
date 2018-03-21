@@ -42,7 +42,7 @@ class Tab3 : android.support.v4.app.Fragment (){
     var switch1 : Switch?= null
     var tp: TimePicker ?= null
     var noteTxt: TextView?= null
-    val FRIDAY:Int = 3
+    val FRIDAY:Int = 4
     var sData:ShabatData ?= null
 
     @SuppressLint("WrongViewCast")

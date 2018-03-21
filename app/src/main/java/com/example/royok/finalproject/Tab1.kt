@@ -20,6 +20,8 @@ class Tab1() : Fragment() {
     var curLightCandleTxt : TextView ?= null
     var curHavdalah : TextView ?= null
     var city : TextView ?= null
+    var friDate : TextView ?= null
+    var satDate : TextView ?= null
 
             override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -31,11 +33,15 @@ class Tab1() : Fragment() {
         curLightCandleTxt = rootView.findViewById(R.id.curLightCandleTxt)
         curHavdalah =  rootView.findViewById(R.id.curHavdalah)
         city = rootView.findViewById(R.id.locationTxt)
+        friDate = rootView.findViewById(R.id.dateLcTxt)
+        satDate = rootView.findViewById(R.id.dateHavTxt2)
 
         curParashaTxt!!.text = sData.parasha.subSequence(5,sData.parasha.length)
         curLightCandleTxt!!.text = sData.candletime
         curHavdalah!!.text = sData.havdala
         city!!.text = sData.city
+        friDate!!.text = sData.hebDate_friday
+        satDate!!.text=sData.hebDate_saturday
 
         return rootView
     }
