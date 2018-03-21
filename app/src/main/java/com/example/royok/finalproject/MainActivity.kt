@@ -46,7 +46,9 @@ class MainActivity : Activity(){
 
         startBtn.setOnClickListener()
         {
-            requestPermission()
+            setGeoLocationValues()
+
+
             if (! permission)
                 Toast.makeText(this,"location permission invalid!\ndefault location will be loaded",Toast.LENGTH_SHORT).show()
             val dialog = show(this, "",
@@ -366,7 +368,6 @@ class MainActivity : Activity(){
                 // If request is cancelled, the result arrays are empty.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
                     locationHandler.initLocation(this)
-                    setGeoLocationValues()
                     permission = true
                 }
 
